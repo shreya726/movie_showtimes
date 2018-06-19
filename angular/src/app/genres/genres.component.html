@@ -1,0 +1,8 @@
+<h2>Genres</h2>
+<ul class="genres">
+  <li *ngFor="let genre of genres"
+      [class.selected]="genre === selectedGenre"
+      (click)="onSelect(genre)">
+    {{genre.name}}
+  </li>
+</ul>
