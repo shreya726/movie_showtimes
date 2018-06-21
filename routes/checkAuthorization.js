@@ -3,29 +3,29 @@ This is back-end authorization; it can be used to protect individual routes
 from being hit either directly or through the front end. We'd want to
 check the user's login status on the front end, too, possibly to hide
 parts of the interface from unauthenticated users.
-Code by perryd@bu.edu @perrydBUCS
+Code borrowed from perryd@bu.edu @perrydBUCS
  */
-const jwt = require('jsonwebtoken')
-const jwtConfig = require('../config')
-const User = require('../models/User')
+const jwt = require('jsonwebtoken');
+const jwtConfig = require('../config');
+const User = require('../models/User');
 
 
 const checkAuthorization = function (req, res, next) {
 
     //See if there is a token on the request...if not, reject immediately
     //
-    const userJWT = req.cookies.twitterAccessJwt
+    const userJWT = req.cookies.twitterAccessJwt;
     if (!userJWT) {
         res.send(401, 'Invalid or missing authorization token')
     }
     //There's a token; see if it is a valid one and retrieve the payload
     //
     else {
-        const userJWTPayload = jwt.verify(userJWT, config.jwtSecret)
+        const userJWTPayload = jwt.verify(userJWT, config.jwtSecret);
         if (!userJWTPayload) {
             //Kill the token since it is invalid
             //
-            res.clearCookie('twitterAccessJwt')
+            res.clearCookie('twitterAccessJwt');
             res.send(401, 'Invalid or missing authorization token')
         }
         else {
@@ -37,13 +37,13 @@ const checkAuthorization = function (req, res, next) {
                         res.send(401, 'User not currently logged in')
                     }
                     else {
-                        console.log('Valid user:', user.name)
+                        console.log('Valid user:', user.name);
                         next()
                     }
 
                 })
         }
     }
-}
+};
 
-module.exports = checkAuthorization
+module.exports = checkAuthorization;

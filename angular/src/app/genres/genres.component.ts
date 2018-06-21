@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Genre } from '../genre';
-import { GENRES } from '../genres';
+import { Movie } from '../movie';
 import {HttpClient} from "@angular/common/http";
+
+import {GenreService} from "./genres_api.service";
 
 @Component({
   selector: 'app-genres',
@@ -13,9 +15,44 @@ export class GenresComponent implements OnInit {
   genres : any;
   selectedGenre: Genre;
   name: string;
+  movies: any;
+  selectedMovie: Movie;
+  showtimes: any;
+  no_movies: boolean;
+  geolocationPosition: any
+  movieUrl: string
+
+  get_movies(genre): any {
+    this.genres_api.get_movies(genre)
+      .subscribe(
+       data => this.movies = data['results'],
+      err => console.log('Error', err),
+        () => console.log(`Completed request`)
+      )
+  }
+
+  get_showtimes(movie, location): any {
+    console.log(movie)
+    this.genres_api.get_showtimes(movie, location.coords)
+      .subscribe(
+        data => this.showtimes = this.genres_api.get_cinema_names(data['showtimes'], movie.title),
+        err => console.log('Error', err),
+        () => console.log(`Completed request`)
+      )
+
+  }
+
+  // get_cinema_names(showtimes): any {
+  //   this.genres_api.get_cinema_names(showtimes)
+  //     .subscribe(
+  //       data => this.showtimes = data['showtimes'],
+  //       err => console.log('ERror', err),
+  //       () => console.log('Completed request')
+  //     )
+  // }
 
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private genres_api: GenreService) {
      http.get('http://localhost:4000/movies/genres')
       .subscribe(
         data => this.genres = data['data'],
@@ -25,11 +62,46 @@ export class GenresComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (window.navigator && window.navigator.geolocation) {
+      this.geolocationPosition = window.navigator.geolocation.getCurrentPosition(
+        position => {
+          this.geolocationPosition = position,
+            console.log(position)
+        },
+        error => {
+          switch (error.code) {
+            case 1:
+              console.log('Permission Denied');
+              break;
+            case 2:
+              console.log('Position Unavailable');
+              break;
+            case 3:
+              console.log('Timeout');
+              break;
+          }
+        }
+      )}
   }
 
-  onSelect(genre: Genre, http: HttpClient): void {
-    this.selectedGenre = genre;
-    http.post('https://localhost:4000/movies/get_movies', {'genre':genre.id})
-      .subscribe()
+
+  onSelect(selection: any, ): void {
+
+    if ('name' in selection) {
+      this.showtimes = null
+
+      let genre = selection
+      this.selectedGenre = genre;
+      this.get_movies(genre)
+      this.selectedMovie = null
+      this.movieUrl = null
+
+    } else {
+      let movie = selection
+      this.selectedMovie = movie
+      this.movieUrl = "https://image.tmdb.org/t/p/w600_and_h900_bestv2" + movie.poster_path
+      this.get_showtimes(movie, this.geolocationPosition)
+
+    }
   }
 }

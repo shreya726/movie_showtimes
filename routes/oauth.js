@@ -3,34 +3,34 @@
 
 //Get a router instance
 //
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 let mongoose = require('mongoose');
 
 //We're going to store info on users in mongo with a schema defined in
 //mongoose, so get a connection and grab the crypto version of the user model (because crypto)
 //
-const User = require('../models/User')
-const checkAuthorization = require('./checkAuthorization')
+const User = require('../models/User');
+const checkAuthorization = require('./checkAuthorization');
 
 //We're also going to pass the access token back and forth in a
 //JSON Web Token (jwt) that is placed in a cookie, so we'll need
 //a jwt package
 //
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
 //We're using the twitter package to simplify the interaction
 //
-const twitterAPI = require('twitter')
+const twitterAPI = require('twitter');
 
 //Grab configs for Twitter and jwt
 //
-const config = require('../config')
+const config = require('../config');
 
 //We're using the oauth package to simplify things a bit, especially signing
 //requests.
 //
-const oauth = require('oauth').OAuth
+const oauth = require('oauth').OAuth;
 
 //Set up oauth with 3rd party info from config file
 //
@@ -42,13 +42,13 @@ const oa = new oauth(
     "1.0A",
     config.twitter_callback,
     "HMAC-SHA1"
-)
+);
 
 //Route to display a simple pug template
 //
 router.get('/', function (req, res, next) {
     res.render('twitter', {})
-})
+});
 
 //This route is hit from a 'Log In With Twitter' button on the front end
 //
@@ -63,18 +63,18 @@ router.get('/twitter', function (req, res, next) {
     //
     oa.getOAuthRequestToken(function (error, oauth_token, oauth_token_secret, results) {
         if (error) {
-            console.log(error)
+            console.log(error);
             res.render('twitter', {error: 'Unable to grant access token'})
         }
         else {
             //Put the token and secret on the session, then redirect the user's browser
             //to Twitter so that they can log in and authorize this request token
             //
-            req.session.oauth = {}
-            req.session.oauth.token = oauth_token
-            console.log('oauth.token: ' + req.session.oauth.token)
-            req.session.oauth.token_secret = oauth_token_secret
-            console.log('oauth.token_secret: ' + req.session.oauth.token_secret)
+            req.session.oauth = {};
+            req.session.oauth.token = oauth_token;
+            console.log('oauth.token: ' + req.session.oauth.token);
+            req.session.oauth.token_secret = oauth_token_secret;
+            console.log('oauth.token_secret: ' + req.session.oauth.token_secret);
 
             //2. User is sent to Twitter here...oauth_token is an UNAUTHORIZED Request token
             //to be authorized by the user as part of logging in to Twitter. You can think of it
@@ -86,7 +86,7 @@ router.get('/twitter', function (req, res, next) {
         }
     })
 
-})
+});
 
 //3. This route is invoked from Twitter once the user has logged in there and given the app the
 //permissions requested. Both the callback and the requested permissions are defined
@@ -132,7 +132,7 @@ router.get('/callback', function (req, res, next) {
                     console.log(error);
                     res.render('twitter', {'error': error});
                 } else {
-                    const twitterID = results.user_id
+                    const twitterID = results.user_id;
                     req.session.oauth.access_token = oauth_access_token;
                     req.session.oauth.access_token_secret = oauth_access_token_secret;
                     console.log(results);
@@ -156,7 +156,7 @@ router.get('/callback', function (req, res, next) {
                             else {
                                 console.log("Updated", results.screen_name, "in database.")
                             }
-                        })
+                        });
                     //The user is now authenticated with Twitter, and we can send control
                     //back to the browser. (This is in a single-page app, and so we always
                     //return to the / route)
@@ -167,9 +167,9 @@ router.get('/callback', function (req, res, next) {
                     //instead of an RSA signature
                     const jwtPayload = {
                         twitterAccessToken: oauth_access_token
-                    }
+                    };
 
-                    const authJwtToken = jwt.sign(jwtPayload, config.jwtSecret)
+                    const authJwtToken = jwt.sign(jwtPayload, config.jwtSecret);
 
                     //Note that this cookie is visible on the client side ONLY for demo
                     //purposes. You'd want to set this to httpOnly to prevent the cookie
@@ -177,8 +177,8 @@ router.get('/callback', function (req, res, next) {
                     const cookieOptions = {
                         httpOnly: true,
                         expires: 0 //Makes this a session-only cookie
-                    }
-                    res.cookie('twitterAccessJwt', authJwtToken, cookieOptions)
+                    };
+                    res.cookie('twitterAccessJwt', authJwtToken, cookieOptions);
                     //
                     res.render('twitter', {loggedIn: true})
                 }
@@ -186,7 +186,7 @@ router.get('/callback', function (req, res, next) {
         );
     } else
         next(new Error("Error: OAuth object was not present on this session."))
-})
+});
 
 //This route returns an authenticated Twitter user's account settings
 //
@@ -194,7 +194,7 @@ router.get('/showAccount', checkAuthorization, function (req, res, next) {
     //This part of the route will run only for an authenticated user; the
     // checkAuthorization method places the valid user object on the request
 
-    const user = req.user
+    const user = req.user;
 
     //Hit Twitter to get this user's account information; use the twitter
     //package to simplify the call. The API is described at
@@ -207,21 +207,40 @@ router.get('/showAccount', checkAuthorization, function (req, res, next) {
         access_token_secret: user.twitterAccessTokenSecret
     });
     client.get(config.urls.ACCOUNT_SETTINGS_URL, function (err, account, response) {
-        console.log(err, account)
+        console.log(err, account);
         res.render('twitter', {account: account, loggedIn: true})
     })
-})
+});
 
+router.post('/tweet', checkAuthorization, function (req, res, next) {
+    let status = req.body.status;
+    status = encodeURIComponent(status.trim());
+    const userJWT = req.cookies.twitterAccessJwt;
+    console.log(userJWT);
+    const userJWTPayload = jwt.verify(userJWT, config.jwtSecret);
+    let user = User.findOne({twitterAccessToken: userJWTPayload.twitterAccessToken});
+    const client = new twitterAPI({
+        consumer_key: config.twitter_key,
+        consumer_secret: config.twitter_secret,
+        access_token_key: user.twitterAccessToken,
+        access_token_secret: user.twitterAccessTokenSecret
+    });
+    client.post('statuses/update', {status: 'I am a tweet'}, function (error, tweet, response) {
+        if (!error) {
+            console.log(tweet);
+        }
+    });
+});
 
 //This route logs the user out:
 //1. Delete the cookie
 //2. Delete the access key and secret from the user record in mongo
 //
 router.get('/logout', checkAuthorization, function (req, res, next) {
-    const userJWT = req.cookies.twitterAccessJwt
-    const userJWTPayload = jwt.verify(userJWT, jwtConfig.jwtSecret)
+    const userJWT = req.cookies.twitterAccessJwt;
+    const userJWTPayload = jwt.verify(userJWT, config.jwtSecret);
 
-    res.clearCookie('twitterAccessJwt')
+    res.clearCookie('twitterAccessJwt');
     User.findOneAndUpdate({twitterAccessToken: userJWTPayload.twitterAccessToken},
         {
             twitterAccessToken: null,
@@ -237,6 +256,14 @@ router.get('/logout', checkAuthorization, function (req, res, next) {
             res.render('twitter', {loggedIn: false})
         })
 
-})
+});
 
-module.exports = router
+router.get('/username', checkAuthorization, function (req, res, next) {
+    const userJWT = req.cookies.twitterAccessJwt;
+    console.log(userJWT);
+    const userJWTPayload = jwt.verify(userJWT, config.jwtSecret);
+    let user = User.findOne({twitterAccessToken: userJWTPayload.twitterAccessToken});
+    res.json({'username': user.username})
+});
+
+module.exports = router;
