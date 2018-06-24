@@ -32,8 +32,13 @@ export class GenresComponent implements OnInit {
   }
 
   get_showtimes(movie, location): any {
-    console.log(movie)
-    this.genres_api.get_showtimes(movie, location.coords)
+    let coords = {}
+    if (location.coords){
+      coords = location.coords
+    } else {
+      coords = {'latitude': 42.350490099999995, 'longitude': -71.0986401}
+    }
+    this.genres_api.get_showtimes(movie, coords)
       .subscribe(
         data => this.showtimes = this.genres_api.get_cinema_names(data['showtimes'], movie.title),
         err => console.log('Error', err),
@@ -42,14 +47,6 @@ export class GenresComponent implements OnInit {
 
   }
 
-  // get_cinema_names(showtimes): any {
-  //   this.genres_api.get_cinema_names(showtimes)
-  //     .subscribe(
-  //       data => this.showtimes = data['showtimes'],
-  //       err => console.log('ERror', err),
-  //       () => console.log('Completed request')
-  //     )
-  // }
 
 
   constructor(private http: HttpClient, private genres_api: GenreService) {
@@ -62,26 +59,34 @@ export class GenresComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (window.navigator && window.navigator.geolocation) {
-      this.geolocationPosition = window.navigator.geolocation.getCurrentPosition(
-        position => {
-          this.geolocationPosition = position,
-            console.log(position)
-        },
-        error => {
-          switch (error.code) {
-            case 1:
-              console.log('Permission Denied');
-              break;
-            case 2:
-              console.log('Position Unavailable');
-              break;
-            case 3:
-              console.log('Timeout');
-              break;
-          }
-        }
-      )}
+    async function delay(ms: number) {
+      await new Promise(resolve => setTimeout(()=>resolve(), 1000)).then(()=>console.log("fired"));
+    }
+    delay(300)
+      .then(any => {
+        if (window.navigator && window.navigator.geolocation) {
+          window.navigator.geolocation.getCurrentPosition(
+            position => {
+              this.geolocationPosition = position,
+                console.log(position)
+            },
+            error => {
+              switch (error.code) {
+                case 1:
+                  console.log('Permission Denied');
+                  break;
+                case 2:
+                  console.log('Position Unavailable');
+                  break;
+                case 3:
+                  console.log('Timeout');
+                  break;
+              }
+            }
+          )}
+
+      })
+
   }
 
 
