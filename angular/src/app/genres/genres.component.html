@@ -1,56 +1,55 @@
-<h3>@shreyaramesh_!</h3>
 <div style="width: 100%">
-<div style="width: 200px; float: left;">
-<h3 align="left">Select a genre</h3>
-<ul class="genres">
-  <li *ngFor="let genre of genres"
-      [class.selected]="genre === selectedGenre"
-      (click)="onSelect(genre)">
-    {{genre.name}}
-  </li>
-</ul>
-</div>
+  <div style="width: 200px; float: left;">
+    <h3 align="left">Select a genre</h3>
+    <ul class="genres">
+      <li *ngFor="let genre of genres"
+          [class.selected]="genre === selectedGenre"
+          (click)="onSelect(genre)">
+        {{genre.name}}
+      </li>
+    </ul>
+  </div>
 
-<div style="float: left; width: 200px; margin-left: 5%; margin-right: 5%" *ngIf="movies">
-  <h3 align="center">Select a movie</h3>
-  <ul class="genres">
-    <li *ngFor="let movie of movies"
-        [class.selected]="movie === selectedMovie"
-        (click)="onSelect(movie)">
-      {{movie.title}}
+  <div style="float: left; width: 200px; margin-left: 5%; margin-right: 5%" *ngIf="movies">
+    <h3 align="center">Select a movie</h3>
+    <ul class="genres">
+      <li *ngFor="let movie of movies"
+          [class.selected]="movie === selectedMovie"
+          (click)="onSelect(movie)">
+        {{movie.title}}
 
-    </li>
-  </ul>
-</div>
-
-
-<div style="float: left; width: 200px;" *ngIf="showtimes">
-  <h3 align="center">Today's showtimes!</h3>
-  <div *ngIf="showtimes.length < 1">Sorry, there don't seem to be any upcoming showtimes for this movie :(</div>
-
-  <ul class="genres">
-    <li *ngFor="let showtime of showtimes"
-        [class.selected]="showtime === selectedGenre">
-
-      <a href="{{showtime.booking_link}}" target="_blank">
-      {{showtime.cinema_name}} @ {{showtime.time}}
-             </a>
+      </li>
+    </ul>
+  </div>
 
 
-    </li>
-  </ul>
-</div>
+  <div style="float: left; width: 200px;" *ngIf="showtimes">
+    <h3 align="center">Today's showtimes!</h3>
+    <div *ngIf="showtimes.length < 1">Sorry, there don't seem to be any upcoming showtimes for this movie :(</div>
+
+    <ul class="genres">
+      <li *ngFor="let showtime of showtimes"
+          [class.selected]="showtime === selectedGenre">
+
+        <a href="{{showtime.booking_link}}" target="_blank">
+          {{showtime.cinema_name}} @ {{showtime.time}}
+        </a>
+
+
+      </li>
+    </ul>
+  </div>
   <div style="float: left; width: 50px;" *ngIf="showtimes">
     <br>
     <br>
     <ul style="list-style-type: none;">
       <li *ngFor="let showtime of showtimes"
-          >
-          <a class="twitter-share-button"
-             href="{{ showtime.tweetLink }}"
-             target="_blank"
-             data-size="large"><img src="../../assets/twitter.png" height="40" width="40">
-          </a>
+      >
+        <a class="twitter-share-button"
+           href="{{ showtime.tweetLink }}"
+           target="_blank"
+           data-size="large"><img src="../../assets/twitter.png" height="40" width="40">
+        </a>
 
       </li>
     </ul>

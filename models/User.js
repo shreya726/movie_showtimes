@@ -1,10 +1,11 @@
-const mongoose = require('mongoose')
+//Code borrowed from perryd@bu.edu @perrydBUCS
 
-const Schema = mongoose.Schema
+const mongoose = require('mongoose');
+
+const Schema = mongoose.Schema;
 const user = new Schema({
     username    : {
         type    : String,
-//        required: true,
         unique  : true
     },
     passwordHash: String,
@@ -18,6 +19,6 @@ const user = new Schema({
     twitterAccessToken: String,
     twitterAccessTokenSecret: String,
     twitterAccessTokenHash: String
-})
-const User = mongoose.model('users', user)
-module.exports = User
+});
+const User = mongoose.model('users', user);
+module.exports = User;

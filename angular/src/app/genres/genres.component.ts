@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Genre } from '../genre';
-import { Movie } from '../movie';
+import {Component, OnInit} from '@angular/core';
+import {Genre} from '../genre';
+import {Movie} from '../movie';
 import {HttpClient} from "@angular/common/http";
 
 import {GenreService} from "./genres_api.service";
@@ -12,33 +12,26 @@ import {GenreService} from "./genres_api.service";
 })
 export class GenresComponent implements OnInit {
 
-  genres : any;
+  genres: any;
   selectedGenre: Genre;
   name: string;
   movies: any;
   selectedMovie: Movie;
   showtimes: any;
-  no_movies: boolean;
-  geolocationPosition: any
-  movieUrl: string
+  geolocationPosition: any;
+  movieUrl: string;
 
   get_movies(genre): any {
     this.genres_api.get_movies(genre)
       .subscribe(
-       data => this.movies = data['results'],
-      err => console.log('Error', err),
+        data => this.movies = data['results'],
+        err => console.log('Error', err),
         () => console.log(`Completed request`)
       )
   }
 
   get_showtimes(movie, location): any {
-    let coords = {}
-    if (location.coords){
-      coords = location.coords
-    } else {
-      coords = {'latitude': 42.350490099999995, 'longitude': -71.0986401}
-    }
-    this.genres_api.get_showtimes(movie, coords)
+    this.genres_api.get_showtimes(movie, location.coords)
       .subscribe(
         data => this.showtimes = this.genres_api.get_cinema_names(data['showtimes'], movie.title),
         err => console.log('Error', err),
@@ -48,9 +41,8 @@ export class GenresComponent implements OnInit {
   }
 
 
-
   constructor(private http: HttpClient, private genres_api: GenreService) {
-     http.get('http://localhost:4000/movies/genres')
+    http.get('http://localhost:4000/movies/genres')
       .subscribe(
         data => this.genres = data['data'],
         err => console.log(`Error: ${err}`),
@@ -60,8 +52,9 @@ export class GenresComponent implements OnInit {
 
   ngOnInit() {
     async function delay(ms: number) {
-      await new Promise(resolve => setTimeout(()=>resolve(), 1000)).then(()=>console.log("fired"));
+      await new Promise(resolve => setTimeout(() => resolve(), 1000)).then(() => console.log("fired"));
     }
+
     delay(300)
       .then(any => {
         if (window.navigator && window.navigator.geolocation) {
@@ -83,28 +76,27 @@ export class GenresComponent implements OnInit {
                   break;
               }
             }
-          )}
-
+          )
+        }
       })
-
   }
 
 
-  onSelect(selection: any, ): void {
+  onSelect(selection: any,): void {
 
     if ('name' in selection) {
-      this.showtimes = null
+      this.showtimes = null;
 
-      let genre = selection
+      let genre = selection;
       this.selectedGenre = genre;
-      this.get_movies(genre)
-      this.selectedMovie = null
+      this.get_movies(genre);
+      this.selectedMovie = null;
       this.movieUrl = null
 
     } else {
-      let movie = selection
-      this.selectedMovie = movie
-      this.movieUrl = "https://image.tmdb.org/t/p/w600_and_h900_bestv2" + movie.poster_path
+      let movie = selection;
+      this.selectedMovie = movie;
+      this.movieUrl = "https://image.tmdb.org/t/p/w600_and_h900_bestv2" + movie.poster_path;
       this.get_showtimes(movie, this.geolocationPosition)
 
     }
