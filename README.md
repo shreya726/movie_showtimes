@@ -5,13 +5,13 @@ MEAN stack project for CS 591: an app to find movies and showtimes near you base
 
 * From root directory to run backend:\
 `npm install`\
-`npm start`\
+`npm start`
 * To run frontend:\
 `cd angular`  \
 `ng serve` 
 
 * To run mongo
-In separate terminal window:
+In separate terminal window:\
 `mongod`
 
 Navigate to [https://localhost:4200] in browser.
