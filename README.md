@@ -18,8 +18,9 @@ Navigate to [https://localhost:4200] in browser.
 
 ## APIs used / keys needed
 [The Movie DB](https://www.themoviedb.org/documentation/api) \
-[International Showtimes API](https://api.internationalshowtimes.com/documentation/v4/)
+[International Showtimes API](https://api.internationalshowtimes.com/documentation/v4/) \
+Twitter Application Management keys
 
-## Requirements
+## Other Requirements
 * Twitter account for oauth
 * MongoDB (stores mapping between movie UIDs of each API)
