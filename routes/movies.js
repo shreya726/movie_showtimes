@@ -17,6 +17,8 @@ const movieid_schema = new mongoose.Schema({
 
 const movie_id = mongoose.model('movie_id', movieid_schema);
 
+// Get genres and ids as is in themoviedb API
+
 router.get('/genres', function (req, res, next) {
     res.json({
         'data': [
@@ -43,6 +45,8 @@ router.get('/genres', function (req, res, next) {
     })
 });
 
+// Get cinema name by id because cinema_name is not included in /showtimes API response
+
 router.get('/cinemas/:id', function (req, res, next) {
     let cinema_id = req.params.id;
     get_cinema_by_id(cinema_id)
@@ -55,6 +59,7 @@ router.get('/cinemas/:id', function (req, res, next) {
 
 });
 
+// Get movies by genre
 
 router.post('/get_movies', function (req, res, next) {
     if (!('genres' in req.body)) {
@@ -70,6 +75,8 @@ router.post('/get_movies', function (req, res, next) {
         })
 
 });
+
+// Get showtimes by movie title
 
 router.post('/get_showtimes', function (req, res, next) {
     if (!('themoviedb_id' in req.body) || !('movie_title' in req.body)) {
@@ -96,6 +103,11 @@ router.post('/get_showtimes', function (req, res, next) {
         )
 });
 
+// Helper functions //
+
+
+// Get all cinema names for cinema ids in showtimes response
+
 const add_cinema_name = function (showtimes) {
     return new Promise((resolve, reject) => {
         try {
@@ -120,6 +132,8 @@ const add_cinema_name = function (showtimes) {
 
 };
 
+// Get showtimes API id based on themoviedb id or movie title
+
 const helper_movie_id = function (themoviedb_id, movie_title) {
     return new Promise((resolve, reject) => {
         try {
@@ -130,6 +144,8 @@ const helper_movie_id = function (themoviedb_id, movie_title) {
                     if ('from_db' in fx) {
                         resolve(fx)
                     }
+
+                    // If not from db, add to db
                     let results = [];
                     for (let i = 0; i < fx.movies.length; i++) {
                         if (fx.movies[i].title.toLowerCase() === movie_title.toLowerCase()) {
@@ -150,8 +166,7 @@ const helper_movie_id = function (themoviedb_id, movie_title) {
     })
 };
 
-
-// Helper functions
+// API call to showtimes API to get cinema title
 
 const get_cinema_by_id = function (cinema_id) {
     return new Promise((resolve, reject) => {
@@ -168,8 +183,12 @@ const get_cinema_by_id = function (cinema_id) {
     });
 };
 
+// Get showtimes ID based on themoviedb ID or movie title
+
 const get_movie_id = function (themoviedb_id, movie_title) {
     let query = movie_id.findOne({'themoviedb': themoviedb_id});
+
+    // Checking mongo if already in db
     query.select('showtimes');
     query.exec(function (err, showtimes_id) {
         if (err) return err;
@@ -192,6 +211,8 @@ const get_movie_id = function (themoviedb_id, movie_title) {
     });
 };
 
+// Add id mapping to db
+
 const add_to_db = function (themoviedb_id, showtimes_id) {
     let new_entry = new movie_id({'themoviedb': themoviedb_id, 'showtimes': showtimes_id});
     new_entry.save(function (err) {
@@ -203,6 +224,8 @@ const add_to_db = function (themoviedb_id, showtimes_id) {
         }
     })
 };
+
+// API call to showtimes to get showtimes based on movie id and location
 
 const get_showtimes = function (showtimes_id, location) {
     return new Promise((resolve, reject) => {
@@ -217,6 +240,8 @@ const get_showtimes = function (showtimes_id, location) {
         }
     });
 };
+
+// API call to themoviedb API to get movies based on genres
 
 const get_movies = function (genres) {
     return new Promise((resolve, reject) => {
